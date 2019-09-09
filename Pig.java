@@ -3,93 +3,67 @@ import java.util.Scanner;
 
 import static java.lang.System.*;
 
-/*
- * The Pig game
- * See http://en.wikipedia.org/wiki/Pig_%28dice_game%29
- *
- */
 public class Pig {
 
     public static void main(String[] args) {
         new Pig().program();
     }
 
-    // The only allowed instance variables (i.e. declared outside any method)
-    // Accessible from any method
     final Scanner sc = new Scanner(in);
     final Random rand = new Random();
 
     void program() {
-        //test();                 // <-------------- Uncomment to run tests!
 
         final int winPts = 20;    // Points to win (decrease if testing)
-        Player[] players;         // The players (array of Player objects)
-        Player current;            // Current player for round (must use)
+        Player[] players = getPlayers();         // The players (array of Player objects)
+        Player current = players[0];            // Current player for round (must use)
         boolean aborted = false;   // Game aborted by player?
 
-        players = new Player[2];   // Hard coded players, replace *last* of all with ... (see below)
-        Player p1 = new Player();
-        p1.name = "Olle";
-        Player p2 = new Player();
-        p2.name = "Fia";
-        players[0] = p1;
-        players[1] = p2;
-
-        //players = getPlayers();  // ... this (method to read in all players)
 
         welcomeMsg(winPts);
         statusMsg(players);
-        current = null;
 
-        while ( true ) {
+        current.roundPts = 0; // Reset round points
+        int playerN = rand.nextInt(players.length);
 
-            String choiceP1 = getPlayerChoice(p1);  // Get player1 choice (r/n/q)
-
-            while (choiceP1.equals("r")) {  // Loop for player1
-                int dice = Dice(choiceP1);
-                p1.roundPts = p1.roundPts + dice;
-
-                if (p1.roundPts + p1.totalPts >= winPts) {
-                    gameOverMsg(p1, false);
-                    System.exit(0);
-                }
-
-                roundMsg(dice, p1);
-                if (p1.roundPts == 0) {
-                    break;
-                }
-                choiceP1 = getPlayerChoice(p1);
-                if (choiceP1.equals("n")) {
-                    break;
-                }
+        while (true) {
+            if (playerN >= players.length) { //Makes playerN stays within the bounds
+                playerN -= players.length;
             }
 
-            p1.totalPts = p1.totalPts + p1.roundPts;    // Add player1 total
+            current = players[playerN];
 
-            String choiceP2 = getPlayerChoice(p2);  // Player2 choice
 
-            while (choiceP2.equals("r")) {  // Loop for player2
-                int dice = Dice(choiceP2);
-                p2.roundPts = p2.roundPts + dice;
-
-                if (p2.roundPts + p2.totalPts >= winPts) {  // Check if player2 won
-                    gameOverMsg(p2, false);
-                    System.exit(0);
+            while (true) {  // Loop for players
+                String choicePlayer = getPlayerChoice(current);  // Check if player wants to roll again else break
+                if (choicePlayer.equals("n")) {
+                    break;
+                } else if (choicePlayer.equals("q")) {
+                    gameOverMsg(current, true);
                 }
 
-                roundMsg(dice, p2);
-                if (p2.roundPts == 0) {
-                    break;
-                }                                            
-                choiceP2 = getPlayerChoice(p2);
-                if (choiceP2.equals("n")) {
+                int dice = Dice(choicePlayer);  // Rolling a dice
+                current.roundPts = current.roundPts + dice;
+
+                roundMsg(dice, current);  // Message that displays every round
+
+                if ((current.roundPts + current.totalPts) >= winPts) {    // Check for winner
+                    current.totalPts = current.roundPts + current.totalPts;
+                    gameOverMsg(current, false);
+                }
+
+                if (current.roundPts == 0) {  // If player rolled a 1
                     break;
                 }
+
             }
+            playerN++;
+            current.totalPts += current.roundPts;    // Add player total
         }
+
     }
 
-    int Dice(String choice) {
+    int Dice(String choice) {   // Roll dice else return 0
         if (choice.equals("r")) {
             int currentDice = rand.nextInt(6) + 1;
             return currentDice;
@@ -115,7 +89,7 @@ public class Pig {
 
     void roundMsg(int result, Player current) {
         if (result > 1) {
-            out.println("Got " + result + " running total are " + current.roundPts);
+            out.println("Got " + result + ", current round total " + current.roundPts + ", overall total " + current.totalPts);
         } else {
             current.roundPts = 0;
             out.println("Got 1 lost it all!");
@@ -124,11 +98,12 @@ public class Pig {
 
     void gameOverMsg(Player player, boolean aborted) {
         if (aborted) {
-            out.println("Aborted");
+            out.println(player.name + " Aborted");
         } else {
             out.println("Game over! Winner is player " + player.name + " with "
-                    + (player.totalPts + player.roundPts) + " points");
+                    + (player.totalPts + " points"));
         }
+        System.exit(0);
     }
 
     String getPlayerChoice(Player player) {
@@ -137,32 +112,30 @@ public class Pig {
     }
 
     Player[] getPlayers() {
-         // TODO
-        return null;
-    }
+        Player[] players;
+        out.println("How many players? > ");
+        players = new Player[Integer.parseInt(sc.nextLine())];   // Hard coded players, replace *last* of all with ... (see below)
+        for (int i = 0; i <= players.length - 1; i++) {
+            players[i] = new Player();
+            out.println("Enter name of player " + (i + 1) + " :");
+            String str = sc.nextLine();
+            players[i].name = str;
+        }
 
-    // ---------- Class -------------
-    // Class representing the concept of a player
-    // Use the class to create (instantiate) Player objects
-    class Player {
-        String name;     // Default null
-        int totalPts;    // Total points for all rounds, default 0
-        int roundPts;    // Points for a single round, default 0
-    }
-
-    // ----- Testing -----------------
-    // Here you run your tests i.e. call your game logic methods
-    // to see that they really work (IO methods not tested here)
-    void test() {
-        // This is hard coded test data
-        // An array of (no name) Players (probably don't need any name to test)
-        Player[] players = {new Player(), new Player(), new Player()};
-
-        // TODO Use for testing of logcial methods (i.e. non-IO methods)
-
-        exit(0);   // End program
+        return players;
     }
 }
+
+// ---------- Class -------------
+// Class representing the concept of a player
+// Use the class to create (instantiate) Player objects
+class Player {
+    String name;     // Default null
+    int totalPts;    // Total points for all rounds, default 0
+    int roundPts;    // Points for a single round, default 0
+}
+
+
 
 
 
