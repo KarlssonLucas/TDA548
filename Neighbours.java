@@ -45,29 +45,29 @@ public class Neighbours extends Application {
     // This is the method called by the timer to update the world
     // (i.e move unsatisfied) approx each 1/60 sec.
     void updateWorld() {
-        // % of surrounding neighbours that are like me
         Random random = new Random();
-        final double threshold = 0.7;
-        int size = 900;
-        int rowLength = (int) sqrt(size);
-        for (int i = 0; i<rowLength; i++) {
-            for (int k = 0; k<rowLength; k++) {
-                if (world[i][k] == Actor.NONE) {
+        final double threshold = 0.7;   // Percentage off neighbours that are equal to the position you're looking at
+        int size = 10000; // size of grid
+        int rowLength = (int) sqrt(size);   // amount of rows
+        for (int i = 0; i<rowLength; i++) {     // for-loop calculating row
+            for (int k = 0; k<rowLength; k++) {     // for-loop calculating column
+                if (world[i][k] == Actor.NONE) {    // check if current actor is "none", then continue with next
                     continue;
                 }
                 int n1 = random.nextInt(rowLength);
                 int n = random.nextInt(rowLength);
 
-                Actor A = world[i][k];
-                Actor B = world[n][n1];
-                boolean p = checkNeighbours(i, k, threshold);
-                if (!p) {
-                    while (B != Actor.NONE) {
+                Actor A = world[i][k]; // Actor A, our current position we are checking
+                Actor B = world[n][n1]; // B, the actor we are comparing with
+                boolean p = checkNeighbours(i, k, threshold); // Check how many percentage of the actors around you have the same value
+                if (!p) { // If checkNeighbours returned false (p is below threshold)
+                    while (B != Actor.NONE) {   // while actor b is not equal to none, because we can only change current actor
+                        // with empty actors. If B is not NONE we randomize n and n1 until we reach an empty actor
                         n = random.nextInt(rowLength);
                         n1 = random.nextInt(rowLength);
                         B = world[n][n1];
                     }
-                    world[i][k] = world[n][n1];
+                    world[i][k] = world[n][n1]; // Switching actors
                     world[n][n1] = A;
                 }
             }
@@ -82,12 +82,13 @@ public class Neighbours extends Application {
         // %-distribution of RED, BLUE and NONE
         double[] dist = {0.25, 0.25, 0.50};
         // Number of locations (places) in world (square)
-        int nLocations = 900;
+        int nLocations = 10000;
+        int nRow = (int) sqrt(nLocations);
         Random random = new Random();
-        world = new Actor[30][30];
+        world = new Actor[nRow][nRow];  // Initialize the grid of 30x30 actors
 
-        for (int i = 0; i< 30; i++) {
-            for (int k = 0; k < 30; k++) {
+        for (int i = 0; i< nRow; i++) { // For-loop for creating actors that fulfill the requirement of array dist
+            for (int k = 0; k < nRow; k++) {
                 int n = random.nextInt(4);
                 if (n == 0) {
                     world[i][k] = Actor.BLUE;
@@ -114,31 +115,32 @@ public class Neighbours extends Application {
     private boolean checkNeighbours(int i, int i1, double t) {
         double sum = 0;
         double div = 0;
-        int size = 900;
+        int size = 10000;
         int rowLength = (int) Math.sqrt(size);
+        // Variables that are later used in the loop
 
-        Actor A = world[i][i1];
+        Actor A = world[i][i1]; // The actor that you check neighbours for
         for (int dy = -1; dy <= 1; dy++) {
             for (int dx = -1; dx <= 1; dx++) {
-                if (dy == 0 && dx == 0) {
+                if (dy == 0 && dx == 0) {   // Don't count main actor as a neighbor
                     continue;
-                } else if (!isValidLocation(rowLength, i + dx, i1 + dy)) {
+                } else if (!isValidLocation(rowLength, i + dx, i1 + dy)) {  //Check valid position (if inside grid)
                     continue;
                 }
                 Actor N = world[i+dx][i1+dy];
-                if (N == Actor.NONE) {
+                if (N == Actor.NONE) {  // Check if actor is none (don't count none as neighbour)
                     continue;
                 }
-                div +=1;
-                if (N == A) {
+                div +=1;    // Everytime you find a neighbour add 1 to div
+                if (N == A) {   // If the neighbour have the same value as the main actor, add 1 to sum
                     sum+=1;
                 }
-                if (div == 0) {
+                if (div == 0) { // Div can't be zero, meaning no neighbours
                     return false;
                 }
             }
         }
-        return ((sum/div) > t);
+        return ((sum/div) > t); // calculate percentage of neighbours and compare to threshold
     }
 
     // ------- Testing -------------------------------------
