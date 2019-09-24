@@ -47,8 +47,12 @@ public class Neighbours extends Application {
     void updateWorld() {
         Random random = new Random();
         final double threshold = 0.7;   // Percentage off neighbours that are equal to the position you're looking at
-        int size = 10000; // size of grid
-        int rowLength = (int) sqrt(size);   // amount of rows
+        int rowLength = world.length;   // amount of rows
+
+        Actor[][] worldCopy = new Actor[rowLength][rowLength];
+        worldCopy = world;
+
+
         for (int i = 0; i<rowLength; i++) {     // for-loop calculating row
             for (int k = 0; k<rowLength; k++) {     // for-loop calculating column
                 if (world[i][k] == Actor.NONE) {    // check if current actor is "none", then continue with next
@@ -67,11 +71,12 @@ public class Neighbours extends Application {
                         n1 = random.nextInt(rowLength);
                         B = world[n][n1];
                     }
-                    world[i][k] = world[n][n1]; // Switching actors
-                    world[n][n1] = A;
+                    worldCopy[i][k] = world[n][n1]; // Switching actors
+                    worldCopy[n][n1] = A;
                 }
             }
         }
+        world = worldCopy;
     }
 
     // This method initializes the world variable with a random distribution of Actors
@@ -82,19 +87,19 @@ public class Neighbours extends Application {
         // %-distribution of RED, BLUE and NONE
         double[] dist = {0.25, 0.25, 0.50};
         // Number of locations (places) in world (square)
-        int nLocations = 10000;
+        int nLocations = 90000;
         int nRow = (int) sqrt(nLocations);
         Random random = new Random();
-        world = new Actor[nRow][nRow];  // Initialize the grid of 30x30 actors
+        world = new Actor[nRow][nRow];  // Initialize the grid of 100x100 actors
 
         for (int i = 0; i< nRow; i++) { // For-loop for creating actors that fulfill the requirement of array dist
             for (int k = 0; k < nRow; k++) {
-                int n = random.nextInt(4);
-                if (n == 0) {
+                int n = random.nextInt(10);
+                if (n == 1) {
                     world[i][k] = Actor.BLUE;
-                } if (n == 1) {
+                } if (n == 0) {
                     world[i][k] = Actor.RED;
-                } if ( n == 2 | n == 3) {
+                } else {
                     world[i][k] = Actor.NONE;
                 }
             }
@@ -115,8 +120,7 @@ public class Neighbours extends Application {
     private boolean checkNeighbours(int i, int i1, double t) {
         double sum = 0;
         double div = 0;
-        int size = 10000;
-        int rowLength = (int) Math.sqrt(size);
+        int rowLength = world.length;
         // Variables that are later used in the loop
 
         Actor A = world[i][i1]; // The actor that you check neighbours for
@@ -131,7 +135,7 @@ public class Neighbours extends Application {
                 if (N == Actor.NONE) {  // Check if actor is none (don't count none as neighbour)
                     continue;
                 }
-                div +=1;    // Everytime you find a neighbour add 1 to div
+                div +=1;    // Everytime you find a neighbour add 1 to divR
                 if (N == A) {   // If the neighbour have the same value as the main actor, add 1 to sum
                     sum+=1;
                 }
