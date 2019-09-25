@@ -7,7 +7,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
 import java.util.Random;
 
 import static java.lang.Math.*;
@@ -45,38 +44,14 @@ public class Neighbours extends Application {
     // This is the method called by the timer to update the world
     // (i.e move unsatisfied) approx each 1/60 sec.
     void updateWorld() {
-        Random random = new Random();
         final double threshold = 0.7;   // Percentage off neighbours that are equal to the position you're looking at
         int rowLength = world.length;   // amount of rows
 
         Actor[][] worldCopy = new Actor[rowLength][rowLength];
         worldCopy = world;
 
+        swapActor(worldCopy, world, threshold, rowLength);
 
-        for (int i = 0; i<rowLength; i++) {     // for-loop calculating row
-            for (int k = 0; k<rowLength; k++) {     // for-loop calculating column
-                if (world[i][k] == Actor.NONE) {    // check if current actor is "none", then continue with next
-                    continue;
-                }
-                int n1 = random.nextInt(rowLength);
-                int n = random.nextInt(rowLength);
-
-                Actor A = world[i][k]; // Actor A, our current position we are checking
-                Actor B = world[n][n1]; // B, the actor we are comparing with
-                boolean p = checkNeighbours(i, k, threshold); // Check how many percentage of the actors around you have the same value
-                if (!p) { // If checkNeighbours returned false (p is below threshold)
-                    while (B != Actor.NONE) {   // while actor b is not equal to none, because we can only change current actor
-                        // with empty actors. If B is not NONE we randomize n and n1 until we reach an empty actor
-                        n = random.nextInt(rowLength);
-                        n1 = random.nextInt(rowLength);
-                        B = world[n][n1];
-                    }
-                    worldCopy[i][k] = world[n][n1]; // Switching actors
-                    worldCopy[n][n1] = A;
-                }
-            }
-        }
-        world = worldCopy;
     }
 
     // This method initializes the world variable with a random distribution of Actors
@@ -87,29 +62,91 @@ public class Neighbours extends Application {
         // %-distribution of RED, BLUE and NONE
         double[] dist = {0.25, 0.25, 0.50};
         // Number of locations (places) in world (square)
-        int nLocations = 90000;
+        int nLocations = 900;
         int nRow = (int) sqrt(nLocations);
         Random random = new Random();
-        world = new Actor[nRow][nRow];  // Initialize the grid of 100x100 actors
+        world = new Actor[nRow][nRow];  // Initialize the grid
+        distActor(world, dist, nLocations);
+        shuffle(world);
 
-        for (int i = 0; i< nRow; i++) { // For-loop for creating actors that fulfill the requirement of array dist
-            for (int k = 0; k < nRow; k++) {
-                int n = random.nextInt(10);
-                if (n == 1) {
-                    world[i][k] = Actor.BLUE;
-                } if (n == 0) {
-                    world[i][k] = Actor.RED;
-                } else {
-                    world[i][k] = Actor.NONE;
-                }
-            }
-        }
-        // Should be last
         fixScreenSize(nLocations);
     }
 
+    void swapActor(Actor[][] worldCopy, Actor[][] world, double threshold, int rowLength) {
 
-    //---------------- Methods ----------------------------
+        for (int i = 0; i<rowLength; i++) {     // for-loop calculating row
+            for (int k = 0; k<rowLength; k++) {     // for-loop calculating column
+                if (world[i][k] == Actor.NONE) {    // check if current actor is "none", then continue with next
+                    continue;
+                }
+                boolean p = checkNeighbours(i, k, threshold); // Check how many percentage of the actors around you have the same value
+                swap(world, worldCopy, p, rowLength, i, k);
+            }
+        }
+        world = worldCopy;
+        return;
+    }
+
+    void swap(Actor[][] world, Actor[][] worldCopy, boolean p, int rowLength, int i, int k) {
+        Random random = new Random();
+
+        int n1 = random.nextInt(rowLength);
+        int n = random.nextInt(rowLength);
+
+        Actor A = world[i][k]; // Actor A, our current position we are checking
+        Actor B = world[n][n1]; // B, the actor we are comparing with
+
+        if (!p) { // If checkNeighbours returned false (p is below threshold)
+            while (B != Actor.NONE) {   // while actor b is not equal to none, because we can only change current actor
+                // with empty actors. If B is not NONE we randomize n and n1 until we reach an empty actor
+                n = random.nextInt(rowLength);
+                n1 = random.nextInt(rowLength);
+                B = world[n][n1];
+            }
+            worldCopy[i][k] = world[n][n1]; // Switching actors
+            worldCopy[n][n1] = A;
+        }
+    }
+
+    Actor[][] distActor(Actor[][] distWorld, double[] dist, int nLocations) {
+        double red = dist[0] * nLocations;
+        double blue = dist[1] * nLocations;
+        double none = dist[2] * nLocations;
+
+        for (int i = 0; i<distWorld.length; i++) {
+            for (int k = 0; k<distWorld.length; k++) {
+                if (red > 0) {
+                    distWorld[i][k] = Actor.RED;
+                    red--;
+                } else if (blue > 0) {
+                    distWorld[i][k] = Actor.BLUE;
+                    blue--;
+                } else if (none > 0) {
+                    distWorld[i][k] = Actor.NONE;
+                    none--;
+                }
+            }
+        }
+
+        return distWorld;
+    }
+
+
+
+    Actor [][] shuffle( Actor [][] mtx){
+        Random rand = new Random();
+        Actor temp;
+        for (int i = 0; i < mtx.length; i++){
+            for (int j = 0; j < mtx[i].length; j++){
+                int raTemp = rand.nextInt(mtx.length);
+                int raTemp2 = rand.nextInt(mtx.length);
+                temp = mtx[i][j];
+                mtx[i][j] = mtx[raTemp][raTemp2];
+                mtx[raTemp][raTemp2] = temp;
+            }
+        }
+        return mtx;
+    }
 
     // Check if inside world
     boolean isValidLocation(int size, int row, int col) {
