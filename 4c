@@ -1,0 +1,151 @@
+Inport  EQU $FC
+Utport  EQU $FB
+DelayC1  EQU $15  ;Dessa konstanter styr hur lång fördröjning Delay1s orsakar.
+DelayC2  EQU $01  ;Ändra dem i labbet så att fördröjnigen blir rimligt lång.
+LIGHT_ON  EQU $FF
+LIGHT_0FF EQU $00
+
+
+
+
+	ORG $20
+
+Main: 
+	LDSP #$20
+	LDA #$00
+	STA $FB ;stänger av lampan
+READ: 	
+	JSR  ReadAscii 
+
+	ADDA #$BF ;adderar A med hex BF
+
+	CMPA #$19 ; jämför A med 19 för att kolla upper limit
+	BHI ERROR ; felhantering
+	TSTA
+	BMI ERROR 
+
+	LSLA  ; multiplicerar A med 2
+
+	PSHA
+
+	LDX #MorseCode
+
+	LDA A,X
+
+	STA Count
+
+	PULA
+
+	INCA
+	
+	LDA A,X
+	JMP LOOP
+PRELOOP:
+	PULA
+LOOP: 
+
+	JSR BlinkLight
+
+	LSLA 
+
+	PSHA 
+	LDA Count
+	DECA 
+	STA Count
+	TSTA
+	BNE  PRELOOP
+	PULA
+
+	BRA READ
+
+ERROR 
+	LDA #$FF
+	STA $FB
+	JMP ERROR
+
+ReadAscii: 
+	LDA $FC
+	BITA #%00000001
+	BNE DONE
+	JMP  ReadAscii
+DONE: 
+	LSRA
+	RTS
+
+BlinkLight:
+	PSHA
+	PSHY
+	LDY  #LIGHT_ON
+	STY $FB
+	BITA #%10000000
+	BPL ONEs
+FOURs: 
+	JSR Delay1s
+	JSR Delay1s
+	JSR Delay1s
+ONEs: 
+	JSR Delay1s
+	LDY #LIGHT_0FF
+	STY $FB
+	JSR Delay1s
+	PULY
+	PULA
+	RTS
+
+
+; Orsakar en fördröjning på ungefär 1s i simulatorn (vid "run fast")
+; Ändrar inga register
+Delay1s:
+	PSHA
+	PSHX
+	PSHC
+	LDX #DelayC2
+Delay1s_loop2:
+	LDA #DelayC1
+Delay1s_loop:
+	DECA
+	BNE Delay1s_loop
+	LEAX -1,X
+	CMPX #0
+	BNE Delay1s_loop2
+	PULC
+	PULX
+	PULA
+	RTS
+
+; Data - Variabler
+Count:
+	RMB 1
+
+; Data - Konstanter
+MorseCode:
+	FCB 2,%01000000 ;'A'
+	FCB 4,%10000000 ;'B'
+	FCB 4,%10100000 ;'C'
+	FCB 3,%10000000 ;'D'
+	FCB 1,%00000000 ;'E'
+	FCB 4,%00100000 ;'F'
+	FCB 3,%11000000 ;'G'
+	FCB 4,%00000000 ;'H'
+	FCB 2,%00000000 ;'I'
+	FCB 4,%01110000 ;'J'
+	FCB 3,%10100000 ;'K'
+	FCB 4,%01000000 ;'L'
+	FCB 2,%11000000 ;'M'
+	FCB 2,%10000000 ;'N'
+	FCB 3,%11100000 ;'O'
+	FCB 4,%01100000 ;'P'
+	FCB 4,%11010000 ;'Q'
+	FCB 3,%01000000 ;'R'
+	FCB 3,%00000000 ;'S'
+	FCB 1,%10000000 ;'T'
+	FCB 3,%00100000 ;'U'
+	FCB 4,%00010000 ;'V'
+	FCB 3,%01100000 ;'W'
+	FCB 4,%10010000 ;'X'
+	FCB 4,%10110000 ;'Y'
+	FCB 4,%11000000 ;'Z'
+
+	ORG $FF
+	FCB  Main
+
