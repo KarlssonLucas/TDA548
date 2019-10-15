@@ -65,9 +65,14 @@ ERROR
 
 ReadAscii: 
 	LDA $FC
+	ASRA 
+	BCS ReadAscii
+	JMP eq1
+eq1:
+	LDA $FC
 	BITA #%00000001
 	BNE DONE
-	JMP  ReadAscii
+	JMP  eq1
 DONE: 
 	LSRA
 	RTS
