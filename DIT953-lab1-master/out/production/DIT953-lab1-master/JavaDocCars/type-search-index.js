@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"<Unnamed>","l":"AbstractCar"},{"l":"All Classes","url":"allclasses-index.html"},{"p":"<Unnamed>","l":"Cars"},{"p":"<Unnamed>","l":"Movable"},{"p":"<Unnamed>","l":"Saab95"},{"p":"<Unnamed>","l":"Scania"},{"p":"<Unnamed>","l":"Trucks"},{"p":"<Unnamed>","l":"Volvo240"}]
