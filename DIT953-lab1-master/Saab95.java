@@ -8,14 +8,27 @@ public class Saab95 extends AbstractCar{
         super(4,Color.red,125);
         stopEngine();
     }
+
+    /**
+     * turns turbo on
+     * used in speedFactor
+     */
     public void setTurboOn(){
 	    turboOn = true;
     }
 
+    /**
+     * turns turbo off
+     * used in speedFactor
+     */
     public void setTurboOff(){
 	    turboOn = false;
     }
 
+    /**
+     * calculates speedFactor of saab
+     * @return speedFactor
+     */
     @Override
     public double speedFactor(){
         double turbo = 1;
