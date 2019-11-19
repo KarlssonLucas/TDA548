@@ -2,26 +2,18 @@ import java.awt.*;
 
 public class Saab95 extends AbstractCar{
 
-    public boolean turboOn;
-    
+    private boolean turboOn;
+
     public Saab95(){
         super(4,Color.red,125);
         stopEngine();
     }
 
-    /**
-     * turns turbo on
-     * used in speedFactor
-     */
-    public void setTurboOn(){
+    void setTurboOn(){
 	    turboOn = true;
     }
 
-    /**
-     * turns turbo off
-     * used in speedFactor
-     */
-    public void setTurboOff(){
+    void setTurboOff(){
 	    turboOn = false;
     }
 
